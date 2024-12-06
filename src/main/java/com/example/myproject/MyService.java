@@ -1,43 +1,47 @@
 package com.example.myproject;
-import jakarta.websocket.OnMessage;
-import jakarta.websocket.Session;
-import jakarta.websocket.server.ServerEndpoint;
-import jakarta.websocket.OnOpen;
 import io.helidon.websocket.WsListener;
 import io.helidon.websocket.WsSession;
 import java.util.logging.Logger;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbException;
+import java.util.List;
+import java.util.ArrayList;
+import jakarta.json.JsonObject;
+
 public class MyService implements WsListener {
-    //private String id;
-private static final Logger log=Logger.getLogger(MyService.class.getName());
-    public MyService(WsSession session){
-    	log.info(session.requestUri());	
-    }
-    //public MyService(String id){
-    //	this.id=id;
-    //}
-    //@OnOpen
-    //public void onOpen(Session session) {
-    //    String path = session.getRequestURI().getPath();
-    //    id = path.substring(path.lastIndexOf('/') + 1);
-	//  System.out.println(id+" connected");
-    //}
-
-    //@OnMessage
-    //public void onMessage(String message, Session session) {
-    //    System.out.println(id +" -> "+ message);
-    //}
-
-    @Override
-    public void onOpen(WsSession session) {
-        //id = session.path().pathParameters().get("id");
-       	//if(id==null)id="unknown";
-       	//id = path.substring(path.lastIndexOf('/') + 1);
-	//session.send(" connected");
-    }
-
-    @Override
+    private String id;
+	private boolean auth;
+	public MyService(){
+		this.auth=false;		
+	}
+	@Override
     public void onMessage(WsSession session,String message,boolean last) {
-	    session.send("->"+message,last);
-    }
+		if(auth){
+			Message msg=parseMessage(message);
+			if(!msg.validate())session.send("Invalid message",last);
+			else session.send(msg.getSender()+"->"+msg.getMessage(),last);
+		}
+		else{
+			if(checkAndSetId(message)){
+				session.send("hello "+id,last);
+			}
+			else session.send("Id not authed or something went wrong.",last);
+		}
+   }
+
+   public Message parseMessage(String message){
+		Jsonb jsonb= JsonbBuilder.create();
+		return jsonb.fromJson(message,Message.class);
+	}
+	public boolean checkAndSetId(String message){
+		Jsonb jsonb=JsonbBuilder.create();
+		JsonObject obj= jsonb.fromJson(message,JsonObject.class);
+		String x=obj.containsKey("id")?obj.getString("id"):null;
+		if(x==null) return false;
+		this.id=x;
+		this.auth=true;
+		return true;
+	}
 }
 
