@@ -1,20 +1,22 @@
 
 package com.example.myproject;
-
+import java.util.logging.Logger;
 
 import io.helidon.logging.common.LogConfig;
 import io.helidon.config.Config;
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.http.HttpRouting;
 
-
+import io.helidon.webserver.Routing;
+import io.helidon.webserver.websocket.WsRouting;
+//import io.helidon.webserver.websocket.WebSocketService;
 
 
 /**
  * The application main class.
  */
 public class Main {
-
+	private static final Logger log= Logger.getLogger(Main.class.getName());
 
     /**
      * Cannot be instantiated.
@@ -36,10 +38,12 @@ public class Main {
         Config config = Config.create();
         Config.global(config);
 
-
         WebServer server = WebServer.builder()
                 .config(config.get("server"))
                 .routing(Main::routing)
+		.addRouting(	
+		WsRouting.builder()
+            .endpoint("/message", new MyService()))
                 .build()
                 .start();
 
