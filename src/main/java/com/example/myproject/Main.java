@@ -17,7 +17,7 @@ import io.helidon.websocket.WsSession;
  */
 public class Main {
 	private static final Logger log= Logger.getLogger(Main.class.getName());
-//	private static final ConcurrentHashMap<String,WsSession> sessions= new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String,WsSession> sessions= new ConcurrentHashMap<>();
     /**
      * Cannot be instantiated.
      */
@@ -43,7 +43,7 @@ public class Main {
                 .routing(Main::routing)
 		.addRouting(	
 		WsRouting.builder()
-            .endpoint("/message", MyService::new))
+            .endpoint("/message",()-> new MyService(sessions)))
                 .build()
                 .start();
 

@@ -13,10 +13,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MyService implements WsListener {
 	private AtomicReference<String> id= new AtomicReference<>();
 	private AtomicReference<Boolean> auth= new AtomicReference<>(false);
-	//private ConcurrentHashMap<String,WsSession> sessions;
-	//public MyService(ConcurrentHashMap<String,WsSession> sessions){
-	//	this.sessions=sessions;
-	//}
+	private final ConcurrentHashMap<String,WsSession> sessions;
+	public MyService(ConcurrentHashMap<String,WsSession> sessions){
+		this.sessions=sessions;
+	}
 	@Override
 	public void onOpen(WsSession session){
 		
@@ -28,17 +28,17 @@ public class MyService implements WsListener {
 			Message msg=parseMessage(message);
 			if(!msg.validate())session.send("Invalid message",last);
 			else {
-				//for(String x:msg.getRecipients()){
-				//	WsSession sesh=sessions.get(x);
-				//	sesh.send(msg.getSender()+" -> "+msg.getMessage(),true);
-				session.send(msg.getSender()+ " -> "+msg.getMessage(),last);
+				for(String x:msg.getRecipients()){
+					WsSession sesh=sessions.get(x);
+					if(sesh!=null) sesh.send(msg.getSender()+" -> "+msg.getMessage(),true);
+				//session.send(msg.getSender()+ " -> "+msg.getMessage(),last);
 				}
 			} 
-		
+		}
 		else{
 			if(checkAndSetId(message)){
 				session.send("hello "+id.get(),last);
-				//sessions.put(id.get(),session);
+				sessions.put(id.get(),session);
 			}
 			else session.send("Id not authed or something went wrong.",last);
 		}
@@ -46,7 +46,7 @@ public class MyService implements WsListener {
 
    @Override 
    public void onClose(WsSession session,int status, String reason){
-	  // sessions.remove(id.get());
+	  	sessions.remove(id.get());
 		this.id=null;
 		this.auth=null;
 	}	
