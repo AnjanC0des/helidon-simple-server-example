@@ -10,14 +10,14 @@ import io.helidon.webserver.http.HttpRouting;
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.websocket.WsRouting;
 //import io.helidon.webserver.websocket.WebSocketService;
-
-
+import java.util.concurrent.ConcurrentHashMap;
+import io.helidon.websocket.WsSession;
 /**
  * The application main class.
  */
 public class Main {
 	private static final Logger log= Logger.getLogger(Main.class.getName());
-
+//	private static final ConcurrentHashMap<String,WsSession> sessions= new ConcurrentHashMap<>();
     /**
      * Cannot be instantiated.
      */
@@ -43,7 +43,7 @@ public class Main {
                 .routing(Main::routing)
 		.addRouting(	
 		WsRouting.builder()
-            .endpoint("/message", new MyService()))
+            .endpoint("/message", MyService::new))
                 .build()
                 .start();
 
