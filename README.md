@@ -32,14 +32,14 @@ wscat -c ws://localhost:8080/message
 < 2 -> im good 
 ```
 Basic:
-```
+```cmd
 curl -X GET http://localhost:8080/simple-greet
 Hello World!
 ```
 
 
 JSON:
-```
+```cmd
 curl -X GET http://localhost:8080/greet
 {"message":"Hello World!"}
 
